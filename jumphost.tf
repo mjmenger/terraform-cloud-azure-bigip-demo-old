@@ -1,51 +1,59 @@
 # Create virtual machine
-resource "azurerm_virtual_machine" "jumphost" {
+resource "azurerm_linux_virtual_machine" "jumphost" {
   count                        = length(local.azs)
   name                         = format("%s-jumphost-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   location                     = azurerm_resource_group.main.location
   resource_group_name          = azurerm_resource_group.main.name
-  primary_network_interface_id = azurerm_network_interface.jh_pub_nic[count.index].id
-  network_interface_ids        = [azurerm_network_interface.jh_pub_nic[count.index].id, azurerm_network_interface.jh_priv_nic[count.index].id]
-  vm_size                      = var.jumphost_instance_type # https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general
-  zones                        = [element(local.azs, count.index)]
+  # removed for Azure 2.0 provider support
+  #primary_network_interface_id   = azurerm_network_interface.jh_pub_nic[count.index].id
+  network_interface_ids           = [azurerm_network_interface.jh_pub_nic[count.index].id, azurerm_network_interface.jh_priv_nic[count.index].id]
+  size                            = var.jumphost_instance_type # https://docs.microsoft.com/en-us/azure/virtual-machines/windows/sizes-general
+  zone                            = element(local.azs, count.index)
+  admin_username                  = var.admin_username
+  admin_password                  = random_password.bigippassword.result
+  disable_password_authentication = false
 
   # Uncomment this line to delete the OS disk automatically when deleting the VM
   # if this is set to false there are behaviors that will require manual intervention
   # if tainting the virtual machine
-  delete_os_disk_on_termination = true
+  #delete_os_disk_on_termination = true
 
   # Uncomment this line to delete the data disks automatically when deleting the VM
-  delete_data_disks_on_termination = true
-  storage_os_disk {
+  #delete_data_disks_on_termination = true
+  os_disk {
     name              = format("%s-jumphost-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Premium_LRS"
+    #create_option     = "FromImage"
+    storage_account_type = "Premium_LRS"
   }
 
-  storage_image_reference {
+  source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
     sku       = "18.04-LTS"
     version   = "latest"
   }
 
-  os_profile {
-    computer_name  = format("%s-jumphost-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    admin_username = "azureuser"
-  }
+  # os_profile {
+  #   computer_name  = format("%s-jumphost-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+  #   admin_username = "azureuser"
+  # }
 
-  os_profile_linux_config {
-    disable_password_authentication = true
-    ssh_keys {
-      path     = "/home/azureuser/.ssh/authorized_keys"
-      key_data = file(var.publickeyfile)
-    }
+  # os_profile_linux_config {
+  #   disable_password_authentication = true
+  #   ssh_keys {
+  #     path     = "/home/azureuser/.ssh/authorized_keys"
+  #     key_data = file(var.publickeyfile)
+  #   }
+  # }
+  admin_ssh_key {
+    username = var.admin_username
+    public_key = file(var.publickeyfile)
   }
 
   boot_diagnostics {
-    enabled     = "true"
-    storage_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
+    #enabled             = "true"
+    storage_account_uri = azurerm_storage_account.mystorageaccount.primary_blob_endpoint
   }
 
   tags = {
@@ -117,7 +125,16 @@ resource "azurerm_network_security_group" "jh_sg" {
   }
 }
 
-
+resource "azurerm_network_interface_security_group_association" "jh-pub-nic-security" {
+  count                     = length(local.azs)
+  network_interface_id      = azurerm_network_interface.jh_pub_nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.jh_sg.id
+}
+resource "azurerm_network_interface_security_group_association" "jh-priv-nic-security" {
+  count                     = length(local.azs)
+  network_interface_id      = azurerm_network_interface.jh_priv_nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.jh_sg.id
+}
 
 
 # Create public IPs
