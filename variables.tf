@@ -77,7 +77,7 @@ variable image_id { default = "/subscriptions/aacd7ba7-e47c-4cb7-a8b7-90f81fdd38
 
 variable "admin_username" {
   description = "BIG-IP administrative user"
-  default     = "admin"
+  default     = "azureuser"
 }
 ## Please check and update the latest DO URL from https://github.com/F5Networks/f5-declarative-onboarding/releases
 # always point to a specific version in order to avoid inadvertent configuration inconsistency
