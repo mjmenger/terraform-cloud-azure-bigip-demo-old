@@ -3,22 +3,28 @@ locals {
 }
 
 # Create F5 BIGIP VMs 
-resource "azurerm_virtual_machine" "f5bigip" {
+resource "azurerm_linux_virtual_machine" "f5bigip" {
   count                        = local.ltm_instance_count
   name                         = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   location                     = azurerm_resource_group.main.location
   resource_group_name          = azurerm_resource_group.main.name
-  primary_network_interface_id = azurerm_network_interface.mgmt-nic[count.index].id
-  network_interface_ids        = [azurerm_network_interface.mgmt-nic[count.index].id, azurerm_network_interface.ext-nic[count.index].id, azurerm_network_interface.int-nic[count.index].id]
-  vm_size                      = var.instance_type
-  zones                        = local.azs
+  # removed for Azure 2.0 provider support
+  #primary_network_interface_id   = azurerm_network_interface.mgmt-nic[count.index].id
+  network_interface_ids           = [azurerm_network_interface.mgmt-nic[count.index].id, azurerm_network_interface.ext-nic[count.index].id, azurerm_network_interface.int-nic[count.index].id]
+  size                            = var.instance_type
+  zone                            = element(local.azs,count.index % length(local.azs))
+  admin_username                  = var.admin_username
+  admin_password                  = random_password.bigippassword.result
+  disable_password_authentication = false
 
   # Uncomment this line to delete the OS disk automatically when deleting the VM
-  delete_os_disk_on_termination = true
+  # removed for Azure 2.0 linux vm support  
+  #delete_os_disk_on_termination = true
 
 
   # Uncomment this line to delete the data disks automatically when deleting the VM
-  delete_data_disks_on_termination = true
+  # removed for Azure 2.0 linux vm support
+  #delete_data_disks_on_termination = true
 
   # leave commented out until 15.1 is in the marketplace
   # storage_image_reference {
@@ -30,28 +36,36 @@ resource "azurerm_virtual_machine" "f5bigip" {
 
   # this is needed to reference the shared image
   # remove when 15.1 is in the marketplace
-  storage_image_reference {
-    id = var.image_id
+  #
+  # removed for Azure 2.0 linux vm support
+  # source_image_reference {
+  #   id = var.image_id
+  # }
+  source_image_id = var.image_id
+
+  # removed for Azure 2.0 linux vm support
+  os_disk {
+    name                 = format("%s-bigip-osdisk-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+    caching              = "ReadWrite"
+    #create_option        = "FromImage"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = "80"
   }
 
-  storage_os_disk {
-    name              = format("%s-bigip-osdisk-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
-    disk_size_gb      = "80"
-  }
-
-  os_profile {
-    computer_name  = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    admin_username = "azureuser"
-    admin_password = random_password.bigippassword.result
-    custom_data    = data.template_file.vm_onboard.rendered
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = false
-  }
+  # removed for Azure 2.0 linux vm support
+  # os_profile {
+  #   computer_name  = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+  #   admin_username = "azureuser"
+  #   admin_password = random_password.bigippassword.result
+  #   custom_data    = data.template_file.vm_onboard.rendered
+  # }
+  custom_data    = base64encode(data.template_file.vm_onboard.rendered)
+  
+  # removed for Azure 2.0 linux vm support
+  # TODO: find alternate location to enable password auth
+  # os_profile_linux_config {
+  #   disable_password_authentication = false
+  # }
 
   # leave commented out until 15.1 is in the marketplace
   # plan {
@@ -73,7 +87,7 @@ resource "azurerm_virtual_machine_extension" "run_startup_cmd" {
   name                 = format("%s-bigip-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   #≠location             = azurerm_resource_group.main.location
   #resource_group_name  = azurerm_resource_group.main.name
-  virtual_machine_id = azurerm_virtual_machine.f5bigip[count.index].id
+  virtual_machine_id = azurerm_linux_virtual_machine.f5bigip[count.index].id
   publisher            = "Microsoft.OSTCExtensions"
   type                 = "CustomScriptForLinux"
   type_handler_version = "1.2"
@@ -159,6 +173,11 @@ resource "azurerm_network_interface" "mgmt-nic" {
     environment = var.specification[terraform.workspace]["environment"]
   }
 }
+resource "azurerm_network_interface_security_group_association" "mgmt-nic-security" {
+  count                     = local.ltm_instance_count
+  network_interface_id      = azurerm_network_interface.mgmt-nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.management_sg.id
+}
 
 # Create Application Traffic Network Security Group and rule
 resource "azurerm_network_security_group" "application_sg" {
@@ -231,6 +250,11 @@ resource "azurerm_network_interface" "ext-nic" {
 
   }
 }
+resource "azurerm_network_interface_security_group_association" "ext-nic-security" {
+  count                     = local.ltm_instance_count
+  network_interface_id      = azurerm_network_interface.ext-nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.application_sg.id
+}
 
 resource "azurerm_network_interface" "int-nic" {
   count                     = local.ltm_instance_count
@@ -251,6 +275,11 @@ resource "azurerm_network_interface" "int-nic" {
     Name        = format("%s-intnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     environment = var.specification[terraform.workspace]["environment"]
   }
+}
+resource "azurerm_network_interface_security_group_association" "int-nic-security" {
+  count                     = local.ltm_instance_count
+  network_interface_id      = azurerm_network_interface.int-nic[count.index].id
+  network_security_group_id = azurerm_network_security_group.management_sg.id
 }
 
 # Create public IPs for BIG-IP management UI
@@ -360,7 +389,7 @@ resource "null_resource" "clusterDO" {
         EOT
   }
   depends_on = [
-    azurerm_virtual_machine.f5bigip,
+    azurerm_linux_virtual_machine.f5bigip,
     azurerm_virtual_machine_extension.run_startup_cmd,
     null_resource.transfer
   ]
