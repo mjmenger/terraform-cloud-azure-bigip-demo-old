@@ -4,12 +4,10 @@ locals {
 
 # Create F5 BIGIP VMs 
 resource "azurerm_linux_virtual_machine" "f5bigip" {
-  count                        = local.ltm_instance_count
-  name                         = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-  location                     = azurerm_resource_group.main.location
-  resource_group_name          = azurerm_resource_group.main.name
-  # removed for Azure 2.0 provider support
-  #primary_network_interface_id   = azurerm_network_interface.mgmt-nic[count.index].id
+  count                           = local.ltm_instance_count
+  name                            = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+  location                        = azurerm_resource_group.main.location
+  resource_group_name             = azurerm_resource_group.main.name
   network_interface_ids           = [azurerm_network_interface.mgmt-nic[count.index].id, azurerm_network_interface.ext-nic[count.index].id, azurerm_network_interface.int-nic[count.index].id]
   size                            = var.instance_type
   zone                            = element(local.azs,count.index % length(local.azs))
@@ -17,63 +15,33 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
   admin_password                  = random_password.bigippassword.result
   disable_password_authentication = false
 
-  # Uncomment this line to delete the OS disk automatically when deleting the VM
-  # removed for Azure 2.0 linux vm support  
-  #delete_os_disk_on_termination = true
-
-
-  # Uncomment this line to delete the data disks automatically when deleting the VM
-  # removed for Azure 2.0 linux vm support
-  #delete_data_disks_on_termination = true
 
   # leave commented out until 15.1 is in the marketplace
-  # storage_image_reference {
+  # source_image_reference {
   #   publisher = "f5-networks"
   #   offer     = var.product
   #   sku       = var.image_name
   #   version   = var.bigip_version
   # }
-
-  # this is needed to reference the shared image
-  # remove when 15.1 is in the marketplace
-  #
-  # removed for Azure 2.0 linux vm support
-  # source_image_reference {
-  #   id = var.image_id
-  # }
-  source_image_id = var.image_id
-
-  # removed for Azure 2.0 linux vm support
-  os_disk {
-    name                 = format("%s-bigip-osdisk-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    caching              = "ReadWrite"
-    #create_option        = "FromImage"
-    storage_account_type = "Standard_LRS"
-    disk_size_gb         = "80"
-  }
-
-  # removed for Azure 2.0 linux vm support
-  # os_profile {
-  #   computer_name  = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-  #   admin_username = "azureuser"
-  #   admin_password = random_password.bigippassword.result
-  #   custom_data    = data.template_file.vm_onboard.rendered
-  # }
-  custom_data    = base64encode(data.template_file.vm_onboard.rendered)
-  
-  # removed for Azure 2.0 linux vm support
-  # TODO: find alternate location to enable password auth
-  # os_profile_linux_config {
-  #   disable_password_authentication = false
-  # }
-
   # leave commented out until 15.1 is in the marketplace
   # plan {
   #   name      = var.image_name
   #   publisher = "f5-networks"
   #   product   = var.product
   # }
+  # this is needed to reference the shared image
+  # remove when 15.1 is in the marketplace
+  source_image_id = var.image_id
 
+  os_disk {
+    name                 = format("%s-bigip-osdisk-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+    disk_size_gb         = "80"
+  }
+
+  custom_data    = base64encode(data.template_file.vm_onboard.rendered)
+  
   tags = {
     Name        = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     environment = var.specification[terraform.workspace]["environment"]
@@ -85,9 +53,7 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
 resource "azurerm_virtual_machine_extension" "run_startup_cmd" {
   count                = local.ltm_instance_count
   name                 = format("%s-bigip-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-  #≠location             = azurerm_resource_group.main.location
-  #resource_group_name  = azurerm_resource_group.main.name
-  virtual_machine_id = azurerm_linux_virtual_machine.f5bigip[count.index].id
+  virtual_machine_id   = azurerm_linux_virtual_machine.f5bigip[count.index].id
   publisher            = "Microsoft.OSTCExtensions"
   type                 = "CustomScriptForLinux"
   type_handler_version = "1.2"
@@ -159,7 +125,6 @@ resource "azurerm_network_interface" "mgmt-nic" {
   name                      = format("%s-mgmtnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   location                  = azurerm_resource_group.main.location
   resource_group_name       = azurerm_resource_group.main.name
-  #network_security_group_id = azurerm_network_security_group.management_sg.id
 
   ip_configuration {
     name                          = "primary"
@@ -219,7 +184,6 @@ resource "azurerm_network_interface" "ext-nic" {
   name                      = format("%s-extnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   location                  = azurerm_resource_group.main.location
   resource_group_name       = azurerm_resource_group.main.name
-  #network_security_group_id = azurerm_network_security_group.application_sg.id
   enable_ip_forwarding      = true
 
   ip_configuration {
@@ -261,7 +225,6 @@ resource "azurerm_network_interface" "int-nic" {
   name                      = format("%s-intnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   location                  = azurerm_resource_group.main.location
   resource_group_name       = azurerm_resource_group.main.name
-  #network_security_group_id = azurerm_network_security_group.management_sg.id
   enable_ip_forwarding      = true
 
   ip_configuration {
