@@ -17,12 +17,12 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
 
 
   # leave commented out until 15.1 is in the marketplace
-  # source_image_reference {
-  #   publisher = "f5-networks"
-  #   offer     = var.product
-  #   sku       = var.image_name
-  #   version   = var.bigip_version
-  # }
+  source_image_reference {
+    publisher = "f5-networks"
+    offer     = var.product
+    sku       = var.image_name
+    version   = var.bigip_version
+  }
   # leave commented out until 15.1 is in the marketplace
   # plan {
   #   name      = var.image_name
@@ -31,7 +31,7 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
   # }
   # this is needed to reference the shared image
   # remove when 15.1 is in the marketplace
-  source_image_id = var.image_id
+  #source_image_id = var.image_id
 
   os_disk {
     name                 = format("%s-bigip-osdisk-%s-%s", var.prefix, count.index, random_id.randomId.hex)
