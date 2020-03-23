@@ -1,3 +1,4 @@
+# arbitrary comment for commit
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
     features {}    
