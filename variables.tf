@@ -35,7 +35,7 @@ variable "specification" {
       application_count  = 2
       environment        = "demodefault"
       cidr               = "10.0.0.0/8"
-      ltm_instance_count = 1
+      ltm_instance_count = 2
       gtm_instance_count = 1
     }
   }
