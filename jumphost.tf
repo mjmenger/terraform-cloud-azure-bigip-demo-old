@@ -48,7 +48,7 @@ resource "azurerm_linux_virtual_machine" "jumphost" {
   # }
   admin_ssh_key {
     username = var.admin_username
-    public_key = file(var.publickeyfile)
+    public_key = var.publickeyfile
   }
 
   boot_diagnostics {
@@ -159,7 +159,7 @@ resource "null_resource" "transfer" {
   connection {
     type        = "ssh"
     user        = "azureuser"
-    private_key = file(var.privatekeyfile)
+    private_key = var.privatekeyfile
     host        = azurerm_public_ip.jh_public_ip[count.index].ip_address
   }
 

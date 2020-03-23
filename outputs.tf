@@ -19,7 +19,7 @@ output "bigip_password" {
 }
 
 output "key_name" {
-  value = var.privatekeyfile
+  value = "value is stored in terraform cloud" # var.privatekeyfile
 }
 
 output "jumphost_ip" {
