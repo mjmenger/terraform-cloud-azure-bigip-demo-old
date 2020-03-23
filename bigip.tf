@@ -24,11 +24,11 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
     version   = var.bigip_version
   }
   # leave commented out until 15.1 is in the marketplace
-  # plan {
-  #   name      = var.image_name
-  #   publisher = "f5-networks"
-  #   product   = var.product
-  # }
+  plan {
+    name      = var.image_name
+    publisher = "f5-networks"
+    product   = var.product
+  }
   # this is needed to reference the shared image
   # remove when 15.1 is in the marketplace
   #source_image_id = var.image_id
