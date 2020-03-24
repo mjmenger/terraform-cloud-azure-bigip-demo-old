@@ -2,6 +2,7 @@
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
     features {}    
+    version = "~> 2.2.0"
 }
 
 terraform {
