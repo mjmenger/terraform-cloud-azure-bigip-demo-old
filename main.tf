@@ -5,7 +5,7 @@ provider "azurerm" {
 }
 
 terraform {
-    version = "~> 0.12.24"
+    required_version = "~> 0.12.24"
     required_providers {
         azurerm = "~> 2.2.0"
     }
