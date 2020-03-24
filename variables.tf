@@ -32,7 +32,7 @@ variable "specification" {
     default = {
       region             = "westus2"
       azs                = ["1", "3"]
-      application_count  = 2
+      application_count  = 4
       environment        = "demodefault"
       cidr               = "10.0.0.0/8"
       ltm_instance_count = 2
