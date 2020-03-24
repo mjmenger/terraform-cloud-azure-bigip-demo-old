@@ -363,7 +363,7 @@ data "template_file" "clusterownerDO" {
   vars = {
     bigip_hostname              = azurerm_network_interface.mgmt-nic[0].private_ip_address
     bigip_license               = ""
-    bigiq_license_host          = "calalang-bigiq.westus2.cloudapp.azure.com"
+    bigiq_license_host          = "" #"calalang-bigiq.westus2.cloudapp.azure.com"
     bigiq_license_username      = "licensor"
     bigiq_license_password      = "PlaintextPassword1$"
     bigiq_license_licensepool   = "F5-BIG-MSP-LOADV4-LIC"
