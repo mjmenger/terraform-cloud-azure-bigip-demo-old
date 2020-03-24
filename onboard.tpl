@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Script must be non-blocking or run in the background.
-
-mkdir -p /config/cloud
-
-cat << 'EOF' > /config/cloud/startup-script.sh
-
-
-#!/bin/bash
-
 # BIG-IPS ONBOARD SCRIPT
 
 LOG_FILE=${onboard_log}
@@ -145,9 +136,3 @@ do
   fi
   sleep 10
 done
-
-EOF
-
-# Now run in the background to not block startup
-chmod 755 /config/cloud/startup-script.sh 
-nohup /config/cloud/startup-script.sh &
