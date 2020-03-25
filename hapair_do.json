@@ -91,7 +91,7 @@
         },
         "default_gateway": {
             "class": "Route",
-            "gw": "10.20.0.1",
+            "gw": "${default_gateway_ip}",
             "network": "default",
             "mtu": 1500
         },
