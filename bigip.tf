@@ -72,6 +72,8 @@ resource "azurerm_virtual_machine_extension" "run_startup_cmd" {
 
 
 # Create Network Security Group and rule
+# https://support.f5.com/csp/article/K13946
+# https://support.f5.com/csp/article/K9057
 resource "azurerm_network_security_group" "management_sg" {
   name                = format("%s-mgmt_sg-%s", var.prefix, random_id.randomId.hex)
   location            = azurerm_resource_group.main.location
@@ -113,6 +115,17 @@ resource "azurerm_network_security_group" "management_sg" {
     destination_address_prefix = "*"
   }
 
+  security_rule {
+    name                       = "configsync-cmi"
+    priority                   = 1004
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "4353"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
 
   tags = {
     environment = var.specification[terraform.workspace]["environment"]
@@ -376,7 +389,7 @@ data "template_file" "clusterownerDO" {
     ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
     internal_self_ip            = azurerm_network_interface.int-nic[0].private_ip_address
     external_self_ip            = azurerm_network_interface.ext-nic[0].private_ip_address
-    failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.mgmt-nic[*].private_ip_address))
+    failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.int-nic[*].private_ip_address))
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
     remote_id                   = 1
@@ -402,7 +415,7 @@ data "template_file" "clustermemberDO" {
     ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
     internal_self_ip            = azurerm_network_interface.int-nic[1].private_ip_address
     external_self_ip            = azurerm_network_interface.ext-nic[1].private_ip_address
-    failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.mgmt-nic[*].private_ip_address))
+    failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.int-nic[*].private_ip_address))
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
     remote_id                   = 0
