@@ -396,18 +396,18 @@ resource "null_resource" "clusterDO" {
 }
 
 data "template_file" "clusterownerDO" {
-  template = file("${path.module}/hapair_do.json")
+  template = file("${path.module}/onboard_do.json")
   vars = {
     bigip_hostname              = azurerm_network_interface.mgmt-nic[0].private_ip_address
     bigip_license               = ""
     bigiq_license_host          = "" #"calalang-bigiq.westus2.cloudapp.azure.com"
-    bigiq_license_username      = "licensor"
-    bigiq_license_password      = "PlaintextPassword1$"
-    bigiq_license_licensepool   = "F5-BIG-MSP-LOADV4-LIC"
-    bigiq_license_skuKeyword1   = "BT"
-    bigiq_license_skuKeyword2   = "1G"
-    bigiq_license_unitOfMeasure = "yearly"
-    bigiq_hypervisor            = "azure"
+    bigiq_license_username      = ""
+    bigiq_license_password      = ""
+    bigiq_license_licensepool   = ""
+    bigiq_license_skuKeyword1   = ""
+    bigiq_license_skuKeyword2   = ""
+    bigiq_license_unitOfMeasure = ""
+    bigiq_hypervisor            = ""
     name_servers                = join(",", formatlist("\"%s\"", ["168.63.129.16"])) # formatlist() is used to prepare lists of quoted strings for a json declaration
     search_domain               = "f5.com"
     ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
@@ -422,18 +422,18 @@ data "template_file" "clusterownerDO" {
 }
 
 data "template_file" "clustermemberDO" {
-  template = file("${path.module}/hapair_do.json")
+  template = file("${path.module}/onboard_do.json")
   vars = {
     bigip_hostname              = azurerm_network_interface.mgmt-nic[1].private_ip_address
     bigip_license               = ""
     bigiq_license_host          = "" #"calalang-bigiq.westus2.cloudapp.azure.com"
-    bigiq_license_username      = "licensor"
-    bigiq_license_password      = "PlaintextPassword1$"
-    bigiq_license_licensepool   = "F5-BIG-MSP-LOADV4-LIC"
-    bigiq_license_skuKeyword1   = "BT"
-    bigiq_license_skuKeyword2   = "1G"
-    bigiq_license_unitOfMeasure = "yearly"
-    bigiq_hypervisor            = "azure"
+    bigiq_license_username      = ""
+    bigiq_license_password      = ""
+    bigiq_license_licensepool   = ""
+    bigiq_license_skuKeyword1   = ""
+    bigiq_license_skuKeyword2   = ""
+    bigiq_license_unitOfMeasure = ""
+    bigiq_hypervisor            = ""
     name_servers                = join(",", formatlist("\"%s\"", ["168.63.129.16"])) # formatlist() is used to prepare lists of quoted strings for a json declaration
     search_domain               = "f5.com"
     ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
@@ -443,6 +443,6 @@ data "template_file" "clustermemberDO" {
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
     remote_id                   = 0
-    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20), 1)
+    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 21), 1)
   }
 }
