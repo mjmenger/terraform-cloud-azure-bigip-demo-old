@@ -396,7 +396,7 @@ resource "null_resource" "clusterDO" {
 }
 
 data "template_file" "clusterownerDO" {
-  template = file("${path.module}/hapair_do.json")
+  template = file("${path.module}/onboard_do.json")
   vars = {
     bigip_hostname              = azurerm_network_interface.mgmt-nic[0].private_ip_address
     bigip_license               = ""
@@ -422,7 +422,7 @@ data "template_file" "clusterownerDO" {
 }
 
 data "template_file" "clustermemberDO" {
-  template = file("${path.module}/hapair_do.json")
+  template = file("${path.module}/onboard_do.json")
   vars = {
     bigip_hostname              = azurerm_network_interface.mgmt-nic[1].private_ip_address
     bigip_license               = ""
