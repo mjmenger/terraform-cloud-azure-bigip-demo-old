@@ -94,33 +94,6 @@
             "gw": "${default_gateway_ip}",
             "network": "default",
             "mtu": 1500
-        },
-        "configsync": {
-            "class": "ConfigSync",
-            "configsyncIp": "/Common/internal-self/address"
-        },
-        "failoverAddress": {
-            "class": "FailoverUnicast",
-            "address": "/Common/internal-self/address"
-        },
-        "failoverGroup": {
-            "class": "DeviceGroup",
-            "type": "sync-failover",
-            "members": [${failovergroup_members}],
-            "owner": "/Common/failoverGroup/members/0",
-            "autoSync": true,
-            "saveOnAutoSync": false,
-            "networkFailover": true,
-            "fullLoadOnSync": false,
-            "asmSync": false
-        },
-        "trust": {
-            "class": "DeviceTrust",
-            "localUsername": "admin",
-            "localPassword": "${local_password}",
-            "remoteHost": "/Common/failoverGroup/members/${remote_id}",
-            "remoteUsername": "admin",
-            "remotePassword": "${remote_password}"
         }
     }
 }
