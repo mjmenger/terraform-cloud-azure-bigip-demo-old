@@ -38,10 +38,10 @@ resource "azurerm_virtual_machine" "appserver" {
   os_profile {
     computer_name  = format("%s-appserver-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     admin_username = "azureuser"
-  
+    custom_data    = base64encode(file("${path.module}/appserverinit.yaml"))
   }
 
-  custom_data = base64encode(file("${path.module}/appserverinit.sh"))
+
 
   os_profile_linux_config {
     disable_password_authentication = true
@@ -64,25 +64,25 @@ resource "azurerm_virtual_machine" "appserver" {
 
 
 # Run Startup Script
-resource "azurerm_virtual_machine_extension" "run_appstartup_cmd" {
-  count                = length(local.azs) * local.application_count # all applications are duplicated across availability zones
-  name                 = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-  virtual_machine_id   = azurerm_virtual_machine.appserver[count.index].id
-  publisher            = "Microsoft.OSTCExtensions"
-  type                 = "CustomScriptForLinux"
-  type_handler_version = "1.2"
+# resource "azurerm_virtual_machine_extension" "run_appstartup_cmd" {
+#   count                = length(local.azs) * local.application_count # all applications are duplicated across availability zones
+#   name                 = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+#   virtual_machine_id   = azurerm_virtual_machine.appserver[count.index].id
+#   publisher            = "Microsoft.OSTCExtensions"
+#   type                 = "CustomScriptForLinux"
+#   type_handler_version = "1.2"
 
-  settings = <<SETTINGS
-        {
-            "commandToExecute": "bash /var/lib/waagent/CustomData"
-        }
-    SETTINGS
+#   settings = <<SETTINGS
+#         {
+#             "commandToExecute": "bash /var/lib/waagent/CustomData"
+#         }
+#     SETTINGS
 
-  tags = {
-    Name        = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
-  }
-}
+#   tags = {
+#     Name        = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
+#     environment = var.specification[terraform.workspace]["environment"]
+#   }
+# }
 
 
 # Create network interface
