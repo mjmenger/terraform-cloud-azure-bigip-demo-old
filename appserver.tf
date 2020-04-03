@@ -57,6 +57,13 @@ resource "azurerm_virtual_machine" "appserver" {
     environment = var.specification[terraform.workspace]["environment"]
     workload    = "nginx"
   }
+
+  provisioner "remote-exec" {
+    inline = {
+      "apt-get -y update",
+      "apt-get -y install nginx"
+    }
+  }
 }
 
 # Create network interface
