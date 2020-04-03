@@ -101,7 +101,7 @@ resource "azurerm_network_security_group" "app_sg" {
   }
 
   security_rule {
-    name                       = "SSH"
+    name                       = "HTTP"
     priority                   = 1002
     direction                  = "Inbound"
     access                     = "Allow"
