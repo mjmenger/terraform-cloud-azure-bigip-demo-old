@@ -38,6 +38,7 @@ resource "azurerm_virtual_machine" "appserver" {
   os_profile {
     computer_name  = format("%s-appserver-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     admin_username = "azureuser"
+    custom_data = file("${path.module}/appserverinit.sh")
   }
 
   os_profile_linux_config {
@@ -56,15 +57,6 @@ resource "azurerm_virtual_machine" "appserver" {
   tags = {
     environment = var.specification[terraform.workspace]["environment"]
     workload    = "nginx"
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get -y update",
-      "sudo apt-get -y install nginx",
-      "sudo systemctl enable nginx",
-      "sudo systemctl start nginx"
-    ]
   }
 }
 
