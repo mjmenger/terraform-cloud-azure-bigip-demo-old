@@ -100,6 +100,19 @@ resource "azurerm_network_security_group" "app_sg" {
     destination_address_prefix = "*"
   }
 
+  security_rule {
+    name                       = "SSH"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "80"
+    source_address_prefix      = local.cidr # only allow traffic from within the virtual network
+    destination_address_prefix = "*"
+  }
+
+
   tags = {
     environment = var.specification[terraform.workspace]["environment"]
   }
