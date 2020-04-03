@@ -59,10 +59,10 @@ resource "azurerm_virtual_machine" "appserver" {
   }
 
   provisioner "remote-exec" {
-    inline = {
+    inline = [
       "apt-get -y update",
       "apt-get -y install nginx"
-    }
+    ]
   }
 }
 
