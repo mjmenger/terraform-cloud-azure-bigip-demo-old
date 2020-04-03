@@ -109,7 +109,7 @@ resource "null_resource" "virtualserverAS3" {
   # cluster owner node
   provisioner "local-exec" {
     command = <<-EOT
-        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[0].ip_address}:443/mgmt/shared/appsvcs \
+        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[0].ip_address}:443/mgmt/shared/appsvcs/declare \
               -H 'Content-Type: application/json' \
               --max-time 600 \
               --retry 10 \
@@ -123,7 +123,7 @@ resource "null_resource" "virtualserverAS3" {
   # cluster member node
   provisioner "local-exec" {
     command = <<-EOT
-        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[1].ip_address}:443/mgmt/shared/appsvcs \
+        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[1].ip_address}:443/mgmt/shared/appsvcs/declare \
               -H 'Content-Type: application/json' \
               --max-time 600 \
               --retry 10 \
