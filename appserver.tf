@@ -38,8 +38,10 @@ resource "azurerm_virtual_machine" "appserver" {
   os_profile {
     computer_name  = format("%s-appserver-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     admin_username = "azureuser"
-    custom_data = file("${path.module}/appserverinit.sh")
+  
   }
+
+  custom_data = base64encode(file("${path.module}/appserverinit.sh"))
 
   os_profile_linux_config {
     disable_password_authentication = true
