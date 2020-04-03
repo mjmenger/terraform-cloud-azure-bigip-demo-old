@@ -103,3 +103,48 @@ resource "azurerm_network_security_group" "app_sg" {
     environment = var.specification[terraform.workspace]["environment"]
   }
 }
+
+
+resource "null_resource" "virtualserverAS3" {
+  # cluster owner node
+  provisioner "local-exec" {
+    command = <<-EOT
+        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[0].ip_address}:443/mgmt/shared/appsvcs \
+              -H 'Content-Type: application/json' \
+              --max-time 600 \
+              --retry 10 \
+              --retry-delay 30 \
+              --retry-max-time 600 \
+              --retry-connrefused \
+              -u "admin:${random_password.bigippassword.result}" \
+              -d '${data.template_file.virtualserverAS3.rendered}'
+        EOT
+  }
+  # cluster member node
+  provisioner "local-exec" {
+    command = <<-EOT
+        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[1].ip_address}:443/mgmt/shared/appsvcs \
+              -H 'Content-Type: application/json' \
+              --max-time 600 \
+              --retry 10 \
+              --retry-delay 30 \
+              --retry-max-time 600 \
+              --retry-connrefused \
+              -u "admin:${random_password.bigippassword.result}" \
+              -d '${data.template_file.virtualserverAS3.rendered}'
+        EOT
+  }
+  depends_on = [
+    azurerm_linux_virtual_machine.f5bigip,
+    azurerm_virtual_machine_extension.run_startup_cmd,
+    null_resource.transfer
+  ]
+}
+
+
+data "template_file" "virtualserverAS3" {
+  template = file("${path.module}/vs_as3.json")
+  vars = {
+    pool_members   = jsonencode(azurerm_network_interface.app_nic[*].private_ip_address)
+  }
+}
