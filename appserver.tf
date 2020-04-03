@@ -62,7 +62,7 @@ resource "azurerm_virtual_machine" "appserver" {
 
 
 # Run Startup Script
-resource "azurerm_virtual_machine_extension" "run_startup_cmd" {
+resource "azurerm_virtual_machine_extension" "run_appstartup_cmd" {
   count                = length(local.azs) * local.application_count # all applications are duplicated across availability zones
   name                 = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
   virtual_machine_id   = azurerm_virtual_machine.appserver[count.index].id
