@@ -157,7 +157,7 @@ resource "null_resource" "virtualserverAS3" {
               --retry-max-time 600 \
               --retry-connrefused \
               -u "admin:${random_password.bigippassword.result}" \
-              -d '${data.template_file.virtualserverAS3.rendered}'
+              -d '${data.template_file.virtualserverAS3[count.index].rendered}'
         EOT
   }
 
