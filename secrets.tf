@@ -5,10 +5,12 @@ resource "random_id" "server" {
 
   byte_length = 8
 }
-random_integer "password-length" {
+
+resource random_integer "password-length" {
   min = 12
   max = 25
 }
+
 resource "random_password" "bigippassword" {
   length           = random_integer.password-length.result
   min_upper        = 1
