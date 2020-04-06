@@ -455,6 +455,6 @@ data "template_file" "clustermemberDO" {
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
     remote_id                   = 0
-    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 21), 1)
+    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20 + (1 % length(var.azs))), 1)
   }
 }
