@@ -10,7 +10,7 @@ terraform {
         azurerm = "~> 2.2.0"
     }
 }
-# Create a resource group if it doesn’t exist
+# Create a resource group 
 resource "azurerm_resource_group" "main" {
     name     = format("%s-resourcegroup-%s",var.prefix,random_id.randomId.hex)
     location = var.specification[terraform.workspace]["region"]
