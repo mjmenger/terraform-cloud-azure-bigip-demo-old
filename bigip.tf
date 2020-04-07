@@ -403,7 +403,7 @@ data "template_file" "clustermemberDO" {
     failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.mgmt-nic[*].private_ip_address))
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
-    remote_id                   = count.index > 0 : 0 : 1
+    remote_id                   = count.index > 0 ? 0 : 1
     default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20 + (count.index % length(local.azs))), 1)
   }
 }
