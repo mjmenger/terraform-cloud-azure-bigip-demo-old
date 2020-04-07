@@ -25,3 +25,7 @@ output "key_name" {
 output "jumphost_ip" {
   value = azurerm_public_ip.jh_public_ip[*].ip_address
 }
+
+output "nginx_ip" {
+  value = azurerm_public_ip.juiceshop_public_ip[*].ip_address
+}

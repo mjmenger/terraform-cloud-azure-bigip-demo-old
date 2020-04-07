@@ -16,13 +16,13 @@ resource "azurerm_virtual_network" "main" {
 }
 
 # Create management subnet
-resource "azurerm_subnet" "bastion" {
-    name                 = "AzureBastionSubnet"
-    resource_group_name  = azurerm_resource_group.main.name
-    virtual_network_name = azurerm_virtual_network.main.name
-    # address prefix 10.1x.0.0/24
-    address_prefix       = "10.40.0.0/24"
-}
+# resource "azurerm_subnet" "bastion" {
+#     name                 = "AzureBastionSubnet"
+#     resource_group_name  = azurerm_resource_group.main.name
+#     virtual_network_name = azurerm_virtual_network.main.name
+#     # address prefix 10.1x.0.0/24
+#     address_prefix       = "10.40.0.0/24"
+# }
 
 # Create management subnet
 resource "azurerm_subnet" "management" {

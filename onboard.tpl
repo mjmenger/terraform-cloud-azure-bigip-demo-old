@@ -15,11 +15,12 @@ fi
 
 exec 1>$LOG_FILE 2>&1
 
-# CHECK TO SEE NETWORK IS READY
+# CHECK TO SEE NETWORK IS READY 
+# specifically if we can reach github where all of the assets are located
 CNT=0
 while true
 do
-  STATUS=$(curl -s -k -I example.com | grep HTTP)
+  STATUS=$(curl -s -k -I github.com | grep HTTP)
   if [[ $STATUS == *"200"* ]]; then
     echo "Got 200! VE is Ready!"
     break
