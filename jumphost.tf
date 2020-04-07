@@ -151,24 +151,3 @@ resource "azurerm_public_ip" "jh_public_ip" {
     environment = var.specification[terraform.workspace]["environment"]
   }
 }
-
-# prepare the jumphost 
-resource "null_resource" "transfer" {
-  count = length(local.azs)
-
-  connection {
-    type        = "ssh"
-    user        = "azureuser"
-    private_key = var.privatekeyfile
-    host        = azurerm_public_ip.jh_public_ip[count.index].ip_address
-  }
-
-  #
-  # Create and place the azure credential file
-  #
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir -p ~/.azure"
-    ]
-  }
-}
