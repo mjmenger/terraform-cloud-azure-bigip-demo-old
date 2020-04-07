@@ -250,13 +250,6 @@ resource "azurerm_network_interface" "ext-nic" {
     public_ip_address_id          = azurerm_public_ip.juiceshop_public_ip[count.index].id
   }
 
-  ip_configuration {
-    name                          = "grafana"
-    subnet_id                     = azurerm_subnet.public[count.index % length(local.azs)].id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.grafana_public_ip[count.index].id
-  }
-
   tags = {
     Name        = format("%s-extnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     environment = var.specification[terraform.workspace]["environment"]
