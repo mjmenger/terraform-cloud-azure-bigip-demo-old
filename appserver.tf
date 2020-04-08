@@ -163,8 +163,7 @@ resource "null_resource" "virtualserverAS3" {
 
   depends_on = [
     azurerm_linux_virtual_machine.f5bigip,
-    azurerm_virtual_machine_extension.run_startup_cmd,
-    null_resource.transfer
+    azurerm_virtual_machine_extension.run_startup_cmd
   ]
 }
 
