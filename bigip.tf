@@ -250,13 +250,6 @@ resource "azurerm_network_interface" "ext-nic" {
     public_ip_address_id          = azurerm_public_ip.juiceshop_public_ip[count.index].id
   }
 
-  ip_configuration {
-    name                          = "grafana"
-    subnet_id                     = azurerm_subnet.public[count.index % length(local.azs)].id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.grafana_public_ip[count.index].id
-  }
-
   tags = {
     Name        = format("%s-extnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
     environment = var.specification[terraform.workspace]["environment"]
@@ -339,21 +332,6 @@ resource "azurerm_public_ip" "juiceshop_public_ip" {
   }
 }
 
-# Create public IPs for Grafana
-resource "azurerm_public_ip" "grafana_public_ip" {
-  count               = local.ltm_instance_count
-  name                = format("%s-grafana-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Static"   # Static is required due to the use of the Standard sku
-  sku                 = "Standard" # the Standard sku is required due to the use of availability zones
-  zones               = [element(local.azs, count.index)]
-
-  tags = {
-    environment = var.specification[terraform.workspace]["environment"]
-  }
-}
-
 # Setup Onboarding scripts
 data "template_file" "vm_onboard" {
   template = "${file("${path.module}/onboard.tpl")}"
@@ -372,73 +350,36 @@ data "template_file" "vm_onboard" {
 
 
 resource "null_resource" "clusterDO" {
-  # cluster owner node
-  provisioner "local-exec" {
-    command = <<-EOT
-        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[0].ip_address}:443/mgmt/shared/declarative-onboarding \
-              -H 'Content-Type: application/json' \
-              --max-time 600 \
-              --retry 10 \
-              --retry-delay 30 \
-              --retry-max-time 600 \
-              --retry-connrefused \
-              -u "admin:${random_password.bigippassword.result}" \
-              -d '${data.template_file.clusterownerDO.rendered}'
-        EOT
-  }
+  count = local.ltm_instance_count
   # cluster member node
   provisioner "local-exec" {
     command = <<-EOT
-        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[1].ip_address}:443/mgmt/shared/declarative-onboarding \
+        curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[count.index].ip_address}:443/mgmt/shared/declarative-onboarding \
               -H 'Content-Type: application/json' \
               --max-time 600 \
               --retry 10 \
               --retry-delay 30 \
               --retry-max-time 600 \
               --retry-connrefused \
-              -u "admin:${random_password.bigippassword.result}" \
-              -d '${data.template_file.clustermemberDO.rendered}'
+              -u "${var.admin_username}:${random_password.bigippassword.result}" \
+              -d '${data.template_file.clustermemberDO[count.index].rendered}'
         EOT
   }
   depends_on = [
     azurerm_linux_virtual_machine.f5bigip,
-    azurerm_virtual_machine_extension.run_startup_cmd,
-    null_resource.transfer
+    azurerm_virtual_machine_extension.run_startup_cmd
   ]
 }
 
-data "template_file" "clusterownerDO" {
-  template = file("${path.module}/onboard_do.json")
-  vars = {
-    bigip_hostname              = azurerm_network_interface.mgmt-nic[0].private_ip_address
-    bigip_license               = ""
-    bigiq_license_host          = "" #"calalang-bigiq.westus2.cloudapp.azure.com"
-    bigiq_license_username      = ""
-    bigiq_license_password      = ""
-    bigiq_license_licensepool   = ""
-    bigiq_license_skuKeyword1   = ""
-    bigiq_license_skuKeyword2   = ""
-    bigiq_license_unitOfMeasure = ""
-    bigiq_hypervisor            = ""
-    name_servers                = join(",", formatlist("\"%s\"", ["168.63.129.16"])) # formatlist() is used to prepare lists of quoted strings for a json declaration
-    search_domain               = "f5.com"
-    ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
-    internal_self_ip            = azurerm_network_interface.int-nic[0].private_ip_address
-    external_self_ip            = azurerm_network_interface.ext-nic[0].private_ip_address
-    failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.mgmt-nic[*].private_ip_address))
-    local_password              = random_password.bigippassword.result
-    remote_password             = random_password.bigippassword.result
-    remote_id                   = 1
-    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20), 1)
-  }
-}
+
 
 data "template_file" "clustermemberDO" {
+  count = local.ltm_instance_count
   template = file("${path.module}/onboard_do.json")
   vars = {
-    bigip_hostname              = azurerm_network_interface.mgmt-nic[1].private_ip_address
+    bigip_hostname              = azurerm_network_interface.mgmt-nic[count.index].private_ip_address
     bigip_license               = ""
-    bigiq_license_host          = "" #"calalang-bigiq.westus2.cloudapp.azure.com"
+    bigiq_license_host          = "" 
     bigiq_license_username      = ""
     bigiq_license_password      = ""
     bigiq_license_licensepool   = ""
@@ -449,12 +390,12 @@ data "template_file" "clustermemberDO" {
     name_servers                = join(",", formatlist("\"%s\"", ["168.63.129.16"])) # formatlist() is used to prepare lists of quoted strings for a json declaration
     search_domain               = "f5.com"
     ntp_servers                 = join(",", formatlist("\"%s\"", ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org"]))
-    internal_self_ip            = azurerm_network_interface.int-nic[1].private_ip_address
-    external_self_ip            = azurerm_network_interface.ext-nic[1].private_ip_address
+    internal_self_ip            = azurerm_network_interface.int-nic[count.index].private_ip_address
+    external_self_ip            = azurerm_network_interface.ext-nic[count.index].private_ip_address
     failovergroup_members       = join(",", formatlist("\"%s\"", azurerm_network_interface.mgmt-nic[*].private_ip_address))
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
-    remote_id                   = 0
-    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20 + (1 % length(local.azs))), 1)
+    remote_id                   = count.index > 0 ? 0 : 1
+    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20 + (count.index % length(local.azs))), 1)
   }
 }

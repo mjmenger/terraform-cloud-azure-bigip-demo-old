@@ -2,33 +2,6 @@ variable "specification" {
   # must select a region that supports availability zones
   # https://docs.microsoft.com/en-us/azure/availability-zones/az-overview
   default = {
-    east = {
-      region             = "eastus"
-      azs                = ["1"]
-      application_count  = 3
-      environment        = "demoeast"
-      cidr               = "10.0.0.0/8"
-      ltm_instance_count = 2
-      gtm_instance_count = 1
-    }
-    west = {
-      region             = "westus2"
-      azs                = ["1"]
-      application_count  = 3
-      environment        = "demowest"
-      cidr               = "10.0.0.0/8"
-      ltm_instance_count = 2
-      gtm_instance_count = 0
-    }
-    central = {
-      region             = "centralus"
-      azs                = ["1"]
-      application_count  = 3
-      environment        = "democentral"
-      cidr               = "10.0.0.0/8"
-      ltm_instance_count = 2
-      gtm_instance_count = 0
-    }
     default = {
       region             = "westus2"
       azs                = ["1", "3"]
@@ -61,9 +34,6 @@ variable "prefix" {
 }
 variable "publickeyfile" {
   description = "public key for server builds"
-}
-variable "privatekeyfile" {
-  description = "private key for server access"
 }
 # BIGIP Image
 # https://github.com/F5Networks/f5-azure-arm-templates/blob/v7.0.0.2/supported/standalone/1nic/new-stack/payg/azuredeploy.json
