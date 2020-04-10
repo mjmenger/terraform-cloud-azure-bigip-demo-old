@@ -9,8 +9,14 @@ terraform {
     required_providers {
         azurerm = "~> 2.2.0"
     }
+    backend "remote" {
+        organization = "f5-mjmenger"
+        workspaces {
+            name = "terraform-cloud-azure-bigip-demo-test"
+        }
+    }
 }
-# Create a resource group if it doesn’t exist
+# Create a resource group 
 resource "azurerm_resource_group" "main" {
     name     = format("%s-resourcegroup-%s",var.prefix,random_id.randomId.hex)
     location = var.specification[terraform.workspace]["region"]
