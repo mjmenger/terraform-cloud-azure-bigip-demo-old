@@ -1,5 +1,7 @@
 This terraform repository uses [workspaces](https://www.terraform.io/docs/state/workspaces.html) to manage multiple parallel builds. Workspace commands include, `new`, `list`, `show`, `select`, and `delete`. The details of how workspaces are used with this repository are described below. The elements of the build configuration that are controlled by the selected workspace are described at the end of this README.
 
+some arbitrary text
+some more text
 
 az vm image terms accept --plan "f5-bigip-virtual-edition-25m-best-hourly" --offer "f5-big-ip-best" --publisher "f5-networks"
 
