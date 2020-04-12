@@ -1,5 +1,5 @@
 locals {
-  application_count = var.specification[terraform.workspace]["application_count"]
+  application_count = var.specification[var.specification_name]["application_count"]
 }
 
 # Create virtual machine
@@ -57,7 +57,7 @@ resource "azurerm_virtual_machine" "appserver" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
     workload    = "nginx"
   }
 }
@@ -80,7 +80,7 @@ resource "azurerm_virtual_machine" "appserver" {
 
 #   tags = {
 #     Name        = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-#     environment = var.specification[terraform.workspace]["environment"]
+#     environment = var.specification[var.specification_name]["environment"]
 #   }
 # }
 
@@ -100,7 +100,7 @@ resource "azurerm_network_interface" "app_nic" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
     workload    = "nginx"
   }
 }
@@ -108,7 +108,7 @@ resource "azurerm_network_interface" "app_nic" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "app_sg" {
   name                = format("%s-app_sg-%s", var.prefix, random_id.randomId.hex)
-  location            = var.specification[terraform.workspace]["region"]
+  location            = var.specification[var.specification_name]["region"]
   resource_group_name = azurerm_resource_group.main.name
 
   # extend the set of security rules to address the needs of
@@ -139,7 +139,7 @@ resource "azurerm_network_security_group" "app_sg" {
 
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
