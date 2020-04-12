@@ -13,6 +13,10 @@ variable "specification" {
     }
   }
 }
+variable "specification_name" {
+  default = "default"
+  description = "name of the map within specification to use for the build"
+}
 
 # Application Server 
 variable "appsvr_instance_type" {
