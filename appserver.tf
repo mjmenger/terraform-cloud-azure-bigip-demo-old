@@ -58,6 +58,9 @@ resource "azurerm_virtual_machine" "appserver" {
 
   tags = {
     environment = var.specification[var.specification_name]["environment"]
+    # for BIG-IP Service Discovery to work, the discovery tags on the NIC 
+    # must be passed to the BIG-IP. The Azure service discovery looks at 
+    # the NICs, not the VMs
     workload    = "nginx"
   }
 }
@@ -101,6 +104,9 @@ resource "azurerm_network_interface" "app_nic" {
 
   tags = {
     environment = var.specification[var.specification_name]["environment"]
+    # for BIG-IP Service Discovery to work the discovery tags on the NIC 
+    # must be passed to the BIG-IP. The Azure service discovery looks at 
+    # the NICs, not the VMs
     workload    = "nginx"
   }
 }
