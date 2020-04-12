@@ -65,29 +65,6 @@ resource "azurerm_virtual_machine" "appserver" {
   }
 }
 
-
-# Run Startup Script
-# resource "azurerm_virtual_machine_extension" "run_appstartup_cmd" {
-#   count                = length(local.azs) * local.application_count # all applications are duplicated across availability zones
-#   name                 = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-#   virtual_machine_id   = azurerm_virtual_machine.appserver[count.index].id
-#   publisher            = "Microsoft.OSTCExtensions"
-#   type                 = "CustomScriptForLinux"
-#   type_handler_version = "1.2"
-
-#   settings = <<SETTINGS
-#         {
-#             "commandToExecute": "bash /var/lib/waagent/CustomData"
-#         }
-#     SETTINGS
-
-#   tags = {
-#     Name        = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-#     environment = var.specification[var.specification_name]["environment"]
-#   }
-# }
-
-
 # Create network interface
 resource "azurerm_network_interface" "app_nic" {
   count                     = length(local.azs) * local.application_count
