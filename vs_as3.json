@@ -26,10 +26,22 @@
                     "monitors": [
                         "http"
                     ],
-                    "members": [{
-                        "servicePort": 80,
-                        "serverAddresses": ${pool_members}
-                    }]
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "addressDiscovery": "azure",
+                            "updateInterval": 10,
+                            "tagKey": "workload",
+                            "tagValue": "nginx",
+                            "addressRealm": "private",
+                            "resourceGroup": "${azure_resource_group}",
+                            "subscriptionId": "${azure_subcription_id}",
+                            "directoryId": "${azure_tenant_id}",
+                            "applicationId": "${azure_client_id}",
+                            "apiAccessKey": "${azure_client_secret}",
+                            "credentialUpdate": false
+                        }                        
+                    ]
                 }
             }
         }
