@@ -101,7 +101,7 @@ resource "azurerm_network_interface" "app_nic" {
 
   tags = {
     environment = var.specification[terraform.workspace]["environment"]
-    application = "juiceshop"
+    workload    = "nginx"
   }
 }
 
@@ -179,7 +179,6 @@ data "template_file" "virtualserverAS3" {
     azure_tenant_id         = var.ARM_TENANT_ID
     azure_client_id         = var.ARM_CLIENT_ID
     azure_client_secret     = var.ARM_CLIENT_SECRET
-
   }
 }
 
