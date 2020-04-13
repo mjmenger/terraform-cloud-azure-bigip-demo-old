@@ -1,17 +1,48 @@
 variable "specification" {
   # must select a region that supports availability zones
   # https://docs.microsoft.com/en-us/azure/availability-zones/az-overview
-  default = {
-    default = {
-      region             = "westus2"
-      azs                = ["1", "3"]
-      application_count  = 4
-      environment        = "demodefault"
+default = {
+    production = {
+      region             = "eastus"
+      azs                = ["1"]
+      application_count  = 3
+      environment        = "demoeast"
       cidr               = "10.0.0.0/8"
       ltm_instance_count = 2
       gtm_instance_count = 1
     }
+    development = {
+      region             = "westus2"
+      azs                = ["1"]
+      application_count  = 3
+      environment        = "demowest"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 2
+      gtm_instance_count = 0
+    }
+    test = {
+      region             = "centralus"
+      azs                = ["1"]
+      application_count  = 3
+      environment        = "democentral"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 2
+      gtm_instance_count = 0
+    }
+    default = {
+      region             = "westus2"
+      azs                = ["1", "3"]
+      application_count  = 2
+      environment        = "demodefault"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 1
+      gtm_instance_count = 1
+    }
   }
+}
+variable "specification_name" {
+  default = "default"
+  description = "name of the map within specification to use for the build"
 }
 
 # Application Server 
@@ -81,4 +112,9 @@ variable onboard_log {
   type        = string
   default     = "/var/log/startup-script.log"
 }
+
+variable "ARM_CLIENT" {}
+variable "ARM_CLIENT_SECRETS" {}
+variable "ARM_SUBSCRIPTION" {}
+variable "ARM_TENANT" {}
 

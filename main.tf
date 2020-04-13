@@ -12,17 +12,17 @@ terraform {
     backend "remote" {
         organization = "f5-mjmenger"
         workspaces {
-            name = "terraform-cloud-azure-bigip-demo-test"
+            name = "my-workspace-name"
         }
     }
 }
 # Create a resource group 
 resource "azurerm_resource_group" "main" {
     name     = format("%s-resourcegroup-%s",var.prefix,random_id.randomId.hex)
-    location = var.specification[terraform.workspace]["region"]
+    location = var.specification[var.specification_name]["region"]
 
     tags = {
-        environment = var.specification[terraform.workspace]["environment"]
+        environment = var.specification[var.specification_name]["environment"]
     }
 }
 
@@ -35,7 +35,7 @@ resource "azurerm_storage_account" "mystorageaccount" {
     account_replication_type    = "LRS"
 
     tags = {
-        environment = var.specification[terraform.workspace]["environment"]
+        environment = var.specification[var.specification_name]["environment"]
     }
 }
 
@@ -43,7 +43,7 @@ resource "azurerm_storage_account" "mystorageaccount" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "securitygroup" {
     name                = format("%s-securitygroup-%s",var.prefix,random_id.randomId.hex)
-    location            = var.specification[terraform.workspace]["region"]
+    location            = var.specification[var.specification_name]["region"]
     resource_group_name = azurerm_resource_group.main.name
     
     security_rule {
@@ -59,7 +59,7 @@ resource "azurerm_network_security_group" "securitygroup" {
     }
 
     tags = {
-        environment = var.specification[terraform.workspace]["environment"]
+        environment = var.specification[var.specification_name]["environment"]
     }
 }
 

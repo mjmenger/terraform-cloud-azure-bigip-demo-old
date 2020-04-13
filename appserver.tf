@@ -1,5 +1,5 @@
 locals {
-  application_count = var.specification[terraform.workspace]["application_count"]
+  application_count = var.specification[var.specification_name]["application_count"]
 }
 
 # Create virtual machine
@@ -57,33 +57,13 @@ resource "azurerm_virtual_machine" "appserver" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
+    # for BIG-IP Service Discovery to work, the discovery tags on the NIC 
+    # must be passed to the BIG-IP. The Azure service discovery looks at 
+    # the NICs, not the VMs
     workload    = "nginx"
   }
 }
-
-
-# Run Startup Script
-# resource "azurerm_virtual_machine_extension" "run_appstartup_cmd" {
-#   count                = length(local.azs) * local.application_count # all applications are duplicated across availability zones
-#   name                 = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-#   virtual_machine_id   = azurerm_virtual_machine.appserver[count.index].id
-#   publisher            = "Microsoft.OSTCExtensions"
-#   type                 = "CustomScriptForLinux"
-#   type_handler_version = "1.2"
-
-#   settings = <<SETTINGS
-#         {
-#             "commandToExecute": "bash /var/lib/waagent/CustomData"
-#         }
-#     SETTINGS
-
-#   tags = {
-#     Name        = format("%s-appsvr-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-#     environment = var.specification[terraform.workspace]["environment"]
-#   }
-# }
-
 
 # Create network interface
 resource "azurerm_network_interface" "app_nic" {
@@ -100,15 +80,18 @@ resource "azurerm_network_interface" "app_nic" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
-    application = "juiceshop"
+    environment = var.specification[var.specification_name]["environment"]
+    # for BIG-IP Service Discovery to work the discovery tags on the NIC 
+    # must be passed to the BIG-IP. The Azure service discovery looks at 
+    # the NICs, not the VMs
+    workload    = "nginx"
   }
 }
 
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "app_sg" {
   name                = format("%s-app_sg-%s", var.prefix, random_id.randomId.hex)
-  location            = var.specification[terraform.workspace]["region"]
+  location            = var.specification[var.specification_name]["region"]
   resource_group_name = azurerm_resource_group.main.name
 
   # extend the set of security rules to address the needs of
@@ -139,7 +122,7 @@ resource "azurerm_network_security_group" "app_sg" {
 
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -174,6 +157,11 @@ data "template_file" "virtualserverAS3" {
     as3_id                  = random_string.as3id.result
     application_external_ip = jsonencode(azurerm_network_interface.ext-nic[count.index].private_ip_addresses[1])
     pool_members            = jsonencode(azurerm_network_interface.app_nic[*].private_ip_address)
+    azure_resource_group    = azurerm_resource_group.main.name
+    azure_subcription_id    = var.ARM_SUBSCRIPTION
+    azure_tenant_id         = var.ARM_TENANT
+    azure_client_id         = var.ARM_CLIENT
+    azure_client_secret     = var.ARM_CLIENT_SECRETS
   }
 }
 
