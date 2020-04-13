@@ -57,7 +57,7 @@ resource "azurerm_linux_virtual_machine" "jumphost" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
     workload    = "jumphost"
   }
 }
@@ -79,7 +79,7 @@ resource "azurerm_network_interface" "jh_pub_nic" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -98,7 +98,7 @@ resource "azurerm_network_interface" "jh_priv_nic" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -121,7 +121,7 @@ resource "azurerm_network_security_group" "jh_sg" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -148,6 +148,6 @@ resource "azurerm_public_ip" "jh_public_ip" {
   zones               = [element(local.azs, count.index)]
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }

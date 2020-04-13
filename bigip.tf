@@ -1,5 +1,5 @@
 locals {
-  ltm_instance_count = var.specification[terraform.workspace]["ltm_instance_count"]
+  ltm_instance_count = var.specification[var.specification_name]["ltm_instance_count"]
 }
 
 # Create F5 BIGIP VMs 
@@ -44,7 +44,7 @@ resource "azurerm_linux_virtual_machine" "f5bigip" {
   
   tags = {
     Name        = format("%s-bigip-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
     workload    = "ltm"
   }
 }
@@ -66,7 +66,7 @@ resource "azurerm_virtual_machine_extension" "run_startup_cmd" {
 
   tags = {
     Name        = format("%s-bigip-startup-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -140,7 +140,7 @@ resource "azurerm_network_security_group" "management_sg" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -160,7 +160,7 @@ resource "azurerm_network_interface" "mgmt-nic" {
 
   tags = {
     Name        = format("%s-mgmtnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 resource "azurerm_network_interface_security_group_association" "mgmt-nic-security" {
@@ -224,7 +224,7 @@ resource "azurerm_network_security_group" "application_sg" {
   }
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -252,7 +252,7 @@ resource "azurerm_network_interface" "ext-nic" {
 
   tags = {
     Name        = format("%s-extnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
 
   }
 }
@@ -278,7 +278,7 @@ resource "azurerm_network_interface" "int-nic" {
 
   tags = {
     Name        = format("%s-intnic-%s-%s", var.prefix, count.index, random_id.randomId.hex)
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 resource "azurerm_network_interface_security_group_association" "int-nic-security" {
@@ -298,7 +298,7 @@ resource "azurerm_public_ip" "management_public_ip" {
   zones               = [element(local.azs, count.index)]
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -313,7 +313,7 @@ resource "azurerm_public_ip" "sip_public_ip" {
   zones               = [element(local.azs, count.index)]
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -328,7 +328,7 @@ resource "azurerm_public_ip" "juiceshop_public_ip" {
   zones               = [element(local.azs, count.index)]
 
   tags = {
-    environment = var.specification[terraform.workspace]["environment"]
+    environment = var.specification[var.specification_name]["environment"]
   }
 }
 
@@ -354,6 +354,8 @@ resource "null_resource" "clusterDO" {
   # cluster member node
   provisioner "local-exec" {
     command = <<-EOT
+        sleep 120
+        
         curl -s -k -X POST https://${azurerm_public_ip.management_public_ip[count.index].ip_address}:443/mgmt/shared/declarative-onboarding \
               -H 'Content-Type: application/json' \
               --max-time 600 \
@@ -396,6 +398,6 @@ data "template_file" "clustermemberDO" {
     local_password              = random_password.bigippassword.result
     remote_password             = random_password.bigippassword.result
     remote_id                   = count.index > 0 ? 0 : 1
-    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[terraform.workspace]["cidr"], 8, 20 + (count.index % length(local.azs))), 1)
+    default_gateway_ip          = cidrhost(cidrsubnet(var.specification[var.specification_name]["cidr"], 8, 20 + (count.index % length(local.azs))), 1)
   }
 }
