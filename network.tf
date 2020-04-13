@@ -1,17 +1,17 @@
 locals{
-    cidr = var.specification[terraform.workspace]["cidr"]
-    azs  = var.specification[terraform.workspace]["azs"]
+    cidr = var.specification[var.specification_name]["cidr"]
+    azs  = var.specification[var.specification_name]["azs"]
 }
 
 # Create virtual network
 resource "azurerm_virtual_network" "main" {
     name                = format("%s-vnet-%s",var.prefix,random_id.randomId.hex)
     address_space       = [local.cidr]
-    location            = var.specification[terraform.workspace]["region"]
+    location            = var.specification[var.specification_name]["region"]
     resource_group_name = azurerm_resource_group.main.name
 
     tags = {
-        environment = var.specification[terraform.workspace]["environment"]
+        environment = var.specification[var.specification_name]["environment"]
     }
 }
 

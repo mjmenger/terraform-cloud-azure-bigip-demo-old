@@ -1,5 +1,5 @@
 output "workspace" {
-  value = terraform.workspace
+  value = var.specification_name
 }
 
 output "hex_label" {
