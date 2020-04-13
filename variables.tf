@@ -6,10 +6,28 @@ default = {
       region             = "eastus"
       azs                = ["1"]
       application_count  = 3
-      environment        = "demoeast"
+      environment        = "productionB"
       cidr               = "10.0.0.0/8"
       ltm_instance_count = 2
       gtm_instance_count = 1
+    }
+    blue = {
+      region             = "eastus"
+      azs                = ["1","3"]
+      application_count  = 4
+      environment        = "productionBlue"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 2
+      gtm_instance_count = 0
+    }
+    green = {
+      region             = "eastus"
+      azs                = ["1","3"]
+      application_count  = 4
+      environment        = "productionGreen"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 2
+      gtm_instance_count = 0
     }
     development = {
       region             = "westus2"
