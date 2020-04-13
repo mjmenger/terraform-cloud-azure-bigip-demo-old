@@ -158,10 +158,10 @@ data "template_file" "virtualserverAS3" {
     application_external_ip = jsonencode(azurerm_network_interface.ext-nic[count.index].private_ip_addresses[1])
     pool_members            = jsonencode(azurerm_network_interface.app_nic[*].private_ip_address)
     azure_resource_group    = azurerm_resource_group.main.name
-    azure_subcription_id    = var.ARM_SUBSCRIPTION_ID
-    azure_tenant_id         = var.ARM_TENANT_ID
-    azure_client_id         = var.ARM_CLIENT_ID
-    azure_client_secret     = var.ARM_CLIENT_SECRET
+    azure_subcription_id    = var.ARM_SUBSCRIPTION
+    azure_tenant_id         = var.ARM_TENANT
+    azure_client_id         = var.ARM_CLIENT
+    azure_client_secret     = var.ARM_CLIENT_SECRETS
   }
 }
 
