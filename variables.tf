@@ -2,7 +2,7 @@ variable "specification" {
   # must select a region that supports availability zones
   # https://docs.microsoft.com/en-us/azure/availability-zones/az-overview
 default = {
-    east = {
+    production = {
       region             = "eastus"
       azs                = ["1"]
       application_count  = 3
@@ -11,7 +11,7 @@ default = {
       ltm_instance_count = 2
       gtm_instance_count = 1
     }
-    west = {
+    development = {
       region             = "westus2"
       azs                = ["1"]
       application_count  = 3
@@ -20,7 +20,7 @@ default = {
       ltm_instance_count = 2
       gtm_instance_count = 0
     }
-    central = {
+    test = {
       region             = "centralus"
       azs                = ["1"]
       application_count  = 3
