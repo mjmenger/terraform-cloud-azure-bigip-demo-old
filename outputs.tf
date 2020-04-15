@@ -15,7 +15,7 @@ output "bigip_mgmt_port" {
 }
 
 output "bigip_password" {
-  value = random_password.bigippassword.result
+  value = "in state" #random_password.bigippassword.result
 }
 
 output "jumphost_ip" {
