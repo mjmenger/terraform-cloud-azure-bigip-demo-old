@@ -3,9 +3,9 @@ variable "specification" {
   # https://docs.microsoft.com/en-us/azure/availability-zones/az-overview
 default = {
     production = {
-      region             = "eastus"
+      region             = "eastus" # changing this will end up destroying everything, causing downtime
       azs                = ["1"]
-      application_count  = 3
+      application_count  = 5
       environment        = "productionB"
       cidr               = "10.0.0.0/8"
       ltm_instance_count = 2
