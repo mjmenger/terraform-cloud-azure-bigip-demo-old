@@ -29,3 +29,6 @@ override.tf.json
 # example: *tfplan*
 *.http
 .env
+
+inspec.lock
+**/inspec/bigip-ready/files/*
