@@ -20,6 +20,15 @@ default = {
       ltm_instance_count = 2
       gtm_instance_count = 0
     }
+    sentineltests = {
+      region             = "eastus"
+      azs                = ["1","3"]
+      application_count  = 4
+      environment        = "stests"
+      cidr               = "10.0.0.0/8"
+      ltm_instance_count = 2
+      gtm_instance_count = 0
+    }
     green = {
       region             = "eastus"
       azs                = ["1","3"]
